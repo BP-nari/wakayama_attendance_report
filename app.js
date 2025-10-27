@@ -1,8 +1,8 @@
 // ========================================
 // 設定（ここを編集してください）
 // ========================================
-const CHATWORK_API_TOKEN = 'YOUR_API_TOKEN_HERE';  // チャットワークのAPIトークンを入力
-const CHATWORK_ROOM_ID = 'YOUR_ROOM_ID_HERE';      // 送信先のルームIDを入力
+const CHATWORK_API_TOKEN = '0bbd4c34e04713c17bd88914ac440622';  // チャットワークのAPIトークンを入力
+const CHATWORK_ROOM_ID = '360298518';      // 送信先のルームIDを入力
 
 // ========================================
 // 日時表示の更新
