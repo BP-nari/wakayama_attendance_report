@@ -93,7 +93,7 @@ document.getElementById('reportForm').addEventListener('submit', async function(
     try {
         // ⚠️ 重要: ここのURLをVercelデプロイ後のURLに変更してください
         // 例: 'https://your-project-name.vercel.app/api/send_report'
-        const API_URL = 'YOUR_VERCEL_URL_HERE/api/send_report';
+        const API_URL = 'https://wakayama-attendance-report.vercel.app/api/send_report';
         
         const res = await fetch(API_URL, {
             method: 'POST',
