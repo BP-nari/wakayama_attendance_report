@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>和歌山用 欠勤・遅刻報告</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid #e8e8e8;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .datetime-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .datetime-display .date {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .datetime-display .time {
+            font-size: 16px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 18px;
+            transition: all 0.2s;
+            font-family: inherit;
+            background: #fafafa;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #333;
+            background: white;
+        }
+
+        .radio-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .radio-option {
+            position: relative;
+        }
+
+        .radio-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            border-color: #333;
+            background: #333;
+            color: white;
+        }
+
+        .time-select-group {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .time-option {
+            position: relative;
+        }
+
+        .time-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .time-option label {
+            display: block;
+            padding: 14px 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            font-size: 16px;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .time-option input[type="radio"]:checked + label {
+            border-color: #333;
+            background: #333;
+            color: white;
+        }
+
+        button {
+            width: 100%;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 16px;
+        }
+
+        button:hover {
+            background: #333;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 18px;
+            border-radius: 6px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+            font-size: 16px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #333;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .time-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            input[type="text"],
+            .radio-option label,
+            button {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>欠勤・遅刻報告</h1>
+        
+        <div class="datetime-display">
+            <div class="date" id="currentDate">2025年10月27日（月）</div>
+            <div class="time" id="currentTime">14:30:45</div>
+        </div>
+
+        <form id="reportForm">
+            <div class="form-group">
+                <label for="staffName">お名前</label>
+                <input type="text" id="staffName" name="staffName" required placeholder="苗字のみOK！">
+            </div>
+
+            <div class="form-group">
+                <label>種別</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="absence" name="reportType" value="欠勤" required>
+                        <label for="absence">欠勤</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="late" name="reportType" value="遅刻" required>
+                        <label for="late">遅刻</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group time-select-group" id="timeSelectGroup">
+                <label>出勤予定時刻</label>
+                <div class="time-grid" id="timeGrid">
+                    <!-- JavaScriptで動的に生成 -->
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">送信する</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">送信中...</p>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            ✅ 報告が正常に送信されました
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            ❌ 送信に失敗しました。もう一度お試しください。
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
