@@ -91,7 +91,8 @@ document.getElementById('reportForm').addEventListener('submit', async function(
 
     try {
         // ✅ Google Apps Script の WebアプリURLを直書き
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbyFwSY53M5muMPebgFjzgmeH6RbuAdlTHzIbkHRMBweHbAp_RMbn82IbGkiqIU_pNI/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbytynEwffpmsWfp9tZ7R0malkxRQM2zpinPoiUbQzQfAqIEsu0kdx6clA7XFUzVcx1g/exec
+";
 
         const res = await fetch(GAS_URL, {
             method: 'POST',
