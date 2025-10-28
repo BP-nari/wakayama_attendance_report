@@ -58,7 +58,7 @@ radioButtons.forEach(r => {
 });
 
 // ========================================
-// フォーム送信
+// フォーム送信（直書きGAS URL版）
 // ========================================
 document.getElementById('reportForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -77,7 +77,6 @@ document.getElementById('reportForm').addEventListener('submit', async function(
     const t = now.toLocaleTimeString('ja-JP', { hour12: false });
     const days = ['日', '月', '火', '水', '木', '金', '土'];
     
-    // Chatwork用のメッセージ
     const chatworkMsg = `[info][title]${type}の報告[/title]氏名: ${name}\n日付: ${d}（${days[now.getDay()]}）\n報告時刻: ${t}\n種別: ${type}\n${attendance ? '出勤予定: ' + attendance + '\n' : ''}[/info]`;
 
     const submitBtn = document.getElementById('submitBtn');
@@ -91,12 +90,12 @@ document.getElementById('reportForm').addEventListener('submit', async function(
     error.style.display = 'none';
 
     try {
-        // ⚠️ 重要: ここのURLをVercelデプロイ後のURLに変更してください
-        // 例: 'https://your-project-name.vercel.app/api/send_report'
-        const API_URL = 'https://wakayama-attendance-report.vercel.app/api/send_report';
-        
-        const res = await fetch(API_URL, {
+        // ✅ Google Apps Script の WebアプリURLを直書き
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyFwSY53M5muMPebgFjzgmeH6RbuAdlTHzIbkHRMBweHbAp_RMbn82IbGkiqIU_pNI/exec";
+
+        const res = await fetch(GAS_URL, {
             method: 'POST',
+            mode: 'cors', // ← CORS通過必須
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 name: name,
@@ -108,18 +107,19 @@ document.getElementById('reportForm').addEventListener('submit', async function(
             })
         });
 
+        if (!res.ok) throw new Error(`HTTPエラー: ${res.status}`);
         const result = await res.json();
 
-        if (!res.ok || !result.success) {
-            throw new Error(result.results?.chatwork?.message || result.results?.spreadsheet?.message || 'サーバーエラー');
+        if (!result.success) {
+            throw new Error(result.error || 'スプレッドシートへの書き込みに失敗しました');
         }
 
         loading.style.display = 'none';
         success.style.display = 'block';
-        
         document.getElementById('reportForm').reset();
         timeSelectGroup.style.display = 'none';
         setTimeout(() => success.style.display = 'none', 3000);
+
     } catch (err) {
         loading.style.display = 'none';
         error.style.display = 'block';
@@ -129,4 +129,3 @@ document.getElementById('reportForm').addEventListener('submit', async function(
         submitBtn.disabled = false;
     }
 });
-
