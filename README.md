@@ -1,1 +1,0 @@
-# wakayama_attendance_report
