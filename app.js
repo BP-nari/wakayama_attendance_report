@@ -23,7 +23,9 @@ function generateTimeOptions() {
         for (let minute = 0; minute < 60; minute += 15) {
             if (hour === 14 && minute > 0) continue;
             const t = hour * 100 + minute;
-            if (t >= 1030 && t <= 1300) continue;
+            // 9:00を除外、10:30-12:45を除外、13:00を含める
+            if (t === 900) continue; // 9:00を除外
+            if (t >= 1030 && t < 1300) continue; // 10:30-12:45を除外
             times.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
         }
     }
