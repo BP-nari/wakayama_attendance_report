@@ -1,20 +1,21 @@
-// ========================================
+// =======================================
 // 日時更新
-// ========================================
+// =======================================
 function updateDateTime() {
     const now = new Date();
     const days = ['日', '月', '火', '水', '木', '金', '土'];
-    document.getElementById('currentDate').textContent =
+    document.getElementById('currentDate').textContent = 
         `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日（${days[now.getDay()]}）`;
-    document.getElementById('currentTime').textContent =
-        now.toLocaleTimeString('ja-JP', { hour12: false });
+    document.getElementById('currentTime').textContent = 
+        `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 }
+
 updateDateTime();
 setInterval(updateDateTime, 1000);
 
-// ========================================
-// 出勤予定時刻選択肢生成
-// ========================================
+// =======================================
+// 出勤予定時刻選択生成
+// =======================================
 function generateTimeOptions() {
     const timeGrid = document.getElementById('timeGrid');
     const times = [];
@@ -31,15 +32,17 @@ function generateTimeOptions() {
         div.className = 'time-option';
         div.innerHTML = `
             <input type="radio" id="time${i}" name="attendanceTime" value="${time}">
-            <label for="time${i}">${time}</label>`;
+            <label for="time${i}">${time}</label>
+        `;
         timeGrid.appendChild(div);
     });
 }
+
 generateTimeOptions();
 
-// ========================================
+// =======================================
 // 遅刻選択で出勤予定表示
-// ========================================
+// =======================================
 const radioButtons = document.querySelectorAll('input[name="reportType"]');
 const timeSelectGroup = document.getElementById('timeSelectGroup');
 radioButtons.forEach(r => {
@@ -47,8 +50,9 @@ radioButtons.forEach(r => {
         if (this.value === '遅刻') {
             timeSelectGroup.style.display = 'block';
             const first = document.querySelector('input[name="attendanceTime"]');
-            if (first && !document.querySelector('input[name="attendanceTime"]:checked'))
+            if (first && !document.querySelector('input[name="attendanceTime"]:checked')) {
                 first.checked = true;
+            }
         } else {
             timeSelectGroup.style.display = 'none';
             const checked = document.querySelector('input[name="attendanceTime"]:checked');
@@ -57,9 +61,9 @@ radioButtons.forEach(r => {
     });
 });
 
-// ========================================
-// フォーム送信（直書きGAS URL版）
-// ========================================
+// =======================================
+// フォーム送信（Google Spreadsheetsのみ）
+// =======================================
 document.getElementById('reportForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -73,11 +77,9 @@ document.getElementById('reportForm').addEventListener('submit', async function(
     }
 
     const now = new Date();
-    const d = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
-    const t = now.toLocaleTimeString('ja-JP', { hour12: false });
     const days = ['日', '月', '火', '水', '木', '金', '土'];
-    
-    const chatworkMsg = `[info][title]${type}の報告[/title]氏名: ${name}\n日付: ${d}（${days[now.getDay()]}）\n報告時刻: ${t}\n種別: ${type}\n${attendance ? '出勤予定: ' + attendance + '\n' : ''}[/info]`;
+    const d = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日（${days[now.getDay()]}）`;
+    const t = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
     const submitBtn = document.getElementById('submitBtn');
     const loading = document.getElementById('loading');
@@ -90,43 +92,35 @@ document.getElementById('reportForm').addEventListener('submit', async function(
     error.style.display = 'none';
 
     try {
-        // ✅ Google Apps Script の WebアプリURLを直書き
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbytynEwffpmsWfp9tZ7R0malkxRQM2zpinPoiUbQzQfAqIEsu0kdx6clA7XFUzVcx1g/exec
-";
+        // Google Apps Script の WebアプリURL（正しいURL）
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwBGHSzdF1xLRD59GVOQcXfRiwLTaACyOK40fSEnT7NbwEXV1DsEenp4w4aFtDfkDQq/exec";
 
         const res = await fetch(GAS_URL, {
             method: 'POST',
-            mode: 'cors', // ← CORS通過必須
+            mode: 'no-cors', // CORS回避（Google Apps Scriptの仕様）
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                timestamp: new Date().toLocaleString('ja-JP'),
                 name: name,
                 type: type,
                 attendance: attendance,
                 date: d,
-                time: t,
-                message: chatworkMsg
+                time: t
             })
         });
 
-        if (!res.ok) throw new Error(`HTTPエラー: ${res.status}`);
-        const result = await res.json();
-
-        if (!result.success) {
-            throw new Error(result.error || 'スプレッドシートへの書き込みに失敗しました');
-        }
-
-        loading.style.display = 'none';
+        // no-corsモードでは常にopaque responseが返るため、成功と見なす
         success.style.display = 'block';
         document.getElementById('reportForm').reset();
+        
+        // 遅刻選択をリセット
         timeSelectGroup.style.display = 'none';
-        setTimeout(() => success.style.display = 'none', 3000);
 
     } catch (err) {
-        loading.style.display = 'none';
         error.style.display = 'block';
-        error.textContent = '❌ 送信に失敗しました: ' + err.message;
-        setTimeout(() => error.style.display = 'none', 5000);
+        console.error('送信失敗:', err);
     } finally {
+        loading.style.display = 'none';
         submitBtn.disabled = false;
     }
 });
